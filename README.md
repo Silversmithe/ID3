@@ -13,7 +13,7 @@ of the data sets that are publicly available at: https://archive.ics.uci.edu/ml/
 
 The data should be comprised of categorical attributes and classifier. IF you find a data set you would like to use and it
 contains numerical values, you can massage it into categorical form by partitioning the values into ranges (extra credit
-can be had for implementing an algorithm that automatically performs this task, see late in the assignment).
+can be had for implementing an algorithm that automatically performs this task, see later in the assignment).
 
 You should also clean your data set by removing examples that have missing values (or figuring out a reasonable way to represent
 them, perhaps by adding a different value, such as "unspecified"). Next, you will need to create exactly three files: an
@@ -48,6 +48,33 @@ be easily accomplished with the *shuf* utility on the DC workstations.
 
 Next, partition all of your examples in two dataset files, one to use for training the decision tree algorithm (training set)
 and one for testing the effectiveness of your trained tree (testing set).
+
+### Chosen Data Set for This Project
+
+__Car Evaluation Dataset__
+
+https://archive.ics.uci.edu/ml/datasets/Car+Evaluation
+
+__Attribute Information__
+
+*Class Values*
+
+unacc, acc, good, vgood   ->  unacc, acc
+
+*Attributes*
+
+_buying:_ vhigh, high, med, low. 
+
+_maint:_ vhigh, high, med, low. 
+
+_doors:_ 2, 3, 4, 5more. 
+
+_persons:_ 2, 4, more. 
+
+_lug_boot:_ small, med, big. 
+
+_safety:_ low, med, high. 
+
 
 ## Part 2: ID3 Decision Tree Creation and Testing (70 points)
 Implement an ID3-based decision tree creator and tester. It will accept a set of data in the format described in part 1,
