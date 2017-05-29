@@ -1,11 +1,4 @@
 #!/usr/bin/python
-"""
-File:           main.py
-
-Provides a command-line interface to the decision tree. It takes a positional
-parameter for the decision tree algorithm module name, and for the name of the classification
-attribute. Invoke with --help to see the complete list of options.
-"""
 
 import argparse
 import copy
@@ -13,6 +6,7 @@ import sys
 
 import attributes
 import dataset
+from id3 import Node
 
 parser = argparse.ArgumentParser(
            description='Train (and optionally test) a decision tree')
@@ -41,28 +35,52 @@ args = parser.parse_args()
 # global all_attributes
 all_attributes = attributes.Attributes(args.attributes_file)
 if args.classifier not in all_attributes.all_names():
-  sys.stderr.write("Classifier '%s' not a recognized attribute name\n" %
+    sys.stderr.write("Classifier '%s' not a recognized attribute name\n" %
                    args.classifier)
-  sys.exit(1)
+    sys.exit(1)
+
 classifier = all_attributes[args.classifier]
 
 # Import the d-tree module, removing the .py extension if found
 if args.dtree_module.endswith('.py') and len(args.dtree_module) > 3:
-  dtree_pkg = __import__(args.dtree_module[:-3])
+    dtree_pkg = __import__(args.dtree_module[:-3])
 else:
-  dtree_pkg = __import__(args.dtree_module)
+    dtree_pkg = __import__(args.dtree_module)
+
+print "d-tree module: ", args.dtree_module
+print "classifier: ", args.classifier
+print "attributes: ", args.attributes_file
+print "training: ", args.training_file
 
 # Train
 training_data = dataset.DataSet(args.training_file, all_attributes)
-starting_attrs = copy.copy(all_attributes)
-starting_attrs.remove(classifier)
-dtree = dtree_pkg.DTree(classifier, training_data, starting_attrs)
-print dtree.dump()
 
-if args.testing_file:
-  testing_data = dataset.DataSet(args.testing_file, all_attributes)
-  correct_results = dtree.test(classifier, testing_data)
-  print("%d of %d (%.2f%%) of testing examples correctly identified" %
-        (correct_results, len(testing_data),
-         (float(correct_results) * 100.0)/ float(len(testing_data))))
+
+
+# # testing the Node class
+# child1 = Node(classifier)
+# child2 = Node(classifier)
+#
+# root = Node(classifier)
+# root.add_child(child1)
+# root.add_child(child2)
+#
+# print "\nRoot\n", str(root)
+# print "\nChild1\n", str(child1)
+# print "\nChild2\n", str(child2)
+#
+# print '-'*50
+# root.del_child(child1)
+#
+# print "\nRoot\n", str(root)
+# print "\nChild1\n", str(child1)
+# print "\nChild2\n", str(child2)
+#
+# print '-'*50
+# root.del_child(child2)
+#
+# print "\nRoot\n", str(root)
+# print "\nChild1\n", str(child1)
+# print "\nChild2\n", str(child2)
+
 

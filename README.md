@@ -86,9 +86,10 @@ example has the same attributes, but different classifications). Also, you can h
 decision tree for which there are no examples (this should only happen if you have attributes with more than two values).
 The following guidelines describe appropriate handling of these cases.
 
-*1. If you run out of attributes and there are examples with different classifications, choose the classification for which
-there are the most examples. If there are a duplicate number of examples in more than one group, choose the classification
-with the earliest alphabetical value (using python's native string comparisons).*
+*1. If you run out of attributes and there are examples with different classifications, choose the classification for which there
+are the most examples. If there are a duplicate number of examples in more than one group, choose the greatest number of
+examples from the parent, recursing as needed. If all sets are equal up to the root, your population is probably too small,
+but choose the value that comes earliest in the alphabet (using Python's native string comparison)*
 
 *2. If you have a subpopulation that has no examples for an attribute value, choose the most prevalent example from the
 population that falls into the parent's domain, as per guideline 1.*
@@ -112,8 +113,10 @@ algorithm module name, and for the name of the classification attribute. Invoke 
     $ ./main.py id3 white-can-win --attributes tests/kr-vs-kp-attributes.txt --train tests/kr-vs-kp-train..csv --test 
     tests/kr-vs-kp-test.csv
     
-*attributes.py*: Specifies an interface for storing individual datapoints (class Example), and collections of datapoints 
-(class DataSet). A DataSet can be initialized from a data file in the format described in section 1.
+*attributes.py*: Specifies an interface for storing information about attributes, including reading them from a file in
+the format described in section 1. Note that attributes are sometimes treated as ordered (when reading in examples and
+mapping the values to attributes), and sometimes treated as keyed (when accessing attributes to retrieve the possible
+values).
 
 *dataset.py*: Specifies an interface for storing individual datapoints (class Example), and collections of datapoints 
 (class DataSet). A DataSet can be initialized from a data file in the format described in the section 1.
@@ -125,3 +128,114 @@ A starting point for id3.py is also provided, but is mostly unimplemented.
 
 ## API
 You will need to implement the class DTree in the file id3.py. This class must implement at least the following methods:
+
+| __Method__ | __Arguments__ | __Type__ | __Meaning__ |
+|:----------:|:-------------:|:--------:|:-----------:|
+| \__init\__ _creates a new decision tree_ |classifier| attribute(see attributes .py| Attribute that is being used for classification|
+| |training data| DataSet (see dataset.py)| Set of training data|
+| | attributes| Attributes (see attributes.py) | All attributes in this domain|
+| test _uses a decision tree to classify test examples_ | classifier | Attribute | Attribute that is being used for classification|
+| | testing data | DataSet | Set of testing data |
+| | \<return value\> | int | Number of test examples that were correctly classified by the decision tree |
+| dump _prints out a visual representation of the decision tree_ | None| | |
+
+Feel free to add __optional__ arguments to methods, but do not change the mandatory arguments -- these methods must continue to work with the provided _main.py_ file.
+
+The format of the dump output for a __non-terminal__ node in the decision tree is:
+
+    attribute-name:attribute-value-1
+    
+    attribute-name:attribute-value-2
+    
+    ...
+    
+    attribute-name:attribute-value-n
+
+A __terminal__ node should be represented as:
+
+    <classification>
+    
+Each line should be indented one space for each level it is below the first.
+
+For example, consider the following decision tree for classifying wine:
+
+    Color
+        |
+        ->White
+        |   |
+        |   -><YES>
+        |
+        ->Red
+           |
+           ->Age
+                |
+                ->[0..5]
+                |   |
+                |   -><YES>
+                |
+                ->[5..10]
+                |   |
+                |   -><NO>
+                |
+                ->[10..99]
+                    |
+                    -><YES>
+             
+It would be represented as:
+
+    color:white
+        <YES>
+    color:red
+        age:[0..5]
+            <YES>
+        age:[5..10]
+            <NO>
+        age:[10..99]
+            <YES>
+
+## Testing 
+The shell script _run\_tests.py_ will be used to test your programs. Please use it to verify correctness before submission.
+The script looks for all .out files in the specified test directory. For each found, it will look for the following files:
+
+    testname-attributes.txt (required): Specifies all attributes and their values. The last attribute in t he file is used
+    as the classifier.
+    
+    testname-train.csv (required): The training data, with one example per line.
+    
+    testname-test.csv (optional): The testing data, with one example per line.
+    
+run\_test.py will run the decision tree algorithm with the training data, and print the resulting tree. If a testing data file
+is also present in the test directory, the script will also run those examples against the decision tree and report the 
+accuracy of the tree in predicting a classification for them. Finally, all output will be compared against the known good 
+results in the testname.out file.
+
+## Note
+__*All code must run on the Engineering Design Center Linux machines( linux.dc.engr.ecu.edu ) without additional packages
+installed. Note that machines are running fairly ancient (2.6.6.) version of Python, so if you do any development outside
+of the DC computers, make sure to test early and test often!*__
+
+## Grading
+You will be graded on correctness and coding style. The assignment will be graded out of 100 points, so anything above that 
+is equivalent to extra credit.
+
+## Additional Credit
+For additional credit, implement no more than __one__ of the following:
+
+* (15 points) Implement k-fold validation by running k iterations, each time using a different partition of the data for
+training and testing. Note that this will require changes to the main.py interface, so please create a seperate main-kfold.py.
+
+* (20 points) Implement a decision tree using random forests. It should have the same interface as the existing decision tree,
+but the tree dump should dump all of the generated trees in the forest. If you choose to implement this, create a
+id3-random-forests.py file for it.
+
+* (30 points) Implement support for handling real-valued attributes, automatically partitioning at points where entropy is 
+greatly reduced. If you choose to implement this, create an id3-real.py file for it. Also, submit two data sets, one for 
+the standard id3 algorithm consisting only of categorical data, and one with real-valued attributes for use with the extra 
+credit assignment.
+
+As always, the first person to identify each significant shortcomming in the assignment itself (this document) will receive
+a 5 point bonus
+
+## Sumbission 
+The assignment is due Wednesday, June 7th at 8am. No assignment will be accepted after 8am on Monday, June 12th. All submissions
+should be made on Camino.
