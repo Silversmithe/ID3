@@ -34,6 +34,9 @@ class Node(object):
         :param: children: ([Node, ...]) list of children nodes attached to self
         """
         assert(type(classifier) is Attribute)
+        assert(type(data) is dataset.DataSet)
+        assert(type(children) is list)
+        assert(type(parent) is type(None) or type(parent) is Node)
 
         self.attribute = None
         self.classifier = classifier
@@ -103,6 +106,37 @@ class Node(object):
 
 class DTree(object):
     """Represents a decision tree created with the ID3 algorithm"""
+
+    """
+    ID3 Pseudocode
+    
+    ID3 (Exampels, Target_Attribute, Attributes)
+        create a root node for the tree
+        
+        if all examples are positive, return the single-node tree Root, with label = +
+        if all examples are negative, return the single-node tree root, with label = -
+        
+        if number of predicting attributes is empty, then return the single node tree root with,
+            \ label = most common value of the target attribute in the examples
+            
+        Otherwise Begin
+        
+            A <- The attribute that best classifies examples
+            Decision tree attribute for Root = A
+            For each possible value, vi, of A,
+                Add a new tree branch below Root, corresponding to the test A = vi
+                let examples(vi) be the subset of examples that have the value vi for A
+                if examples(vi) is empty)
+                    then below this new branch add a leaf node with label = most common target value
+                        \ in the examples
+                else below this new branch add the subtree ID3 (examples(vi), Target_attribute, attributes - {A})
+                
+        End
+        Return Root
+    
+    
+    
+    """
 
     def __init__(self, classifier, training_data, attributes):
         """

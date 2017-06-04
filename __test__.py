@@ -47,6 +47,7 @@ if args.dtree_module.endswith('.py') and len(args.dtree_module) > 3:
 else:
     dtree_pkg = __import__(args.dtree_module)
 
+
 print "d-tree module: ", args.dtree_module
 print "classifier: ", args.classifier
 print "attributes: ", args.attributes_file
@@ -55,6 +56,7 @@ print "training: ", args.training_file
 # Train
 training_data = dataset.DataSet(args.training_file, all_attributes)
 
+print training_data.entropy(classifier)
 
 
 # # testing the Node class

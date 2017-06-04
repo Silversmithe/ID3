@@ -8,6 +8,8 @@ described in section 1.
 import math
 import re
 import sys
+import math
+import attributes
 
 
 class Example(object):
@@ -65,10 +67,33 @@ class DataSet(object):
     def append(self, example):
         self.all_examples.append(example)
 
-    # Determine the entropy of a collection with respect to a classifier.
-    # An entropy of zero indicates the collection is completely sorted.
-    # An entropy of one indicates the collection is evenly distributed with
-    # respect to the classifier.
     def entropy(self, classifier):
-        # IMPLEMENT ME!!!
-        return 0.5
+        """
+        1: completely random
+        0: no randomness
+        Attribute (overall)
+        Classifier (the different values of an attribute?)
+
+        Measure the randomness of a set with respect to a classifier
+
+        Determine the entropy of a collection with respect to a classifier.
+        An entropy of zero indicates the collection is completely sorted.
+        An entropy of one indicates the collection is evenly distributed with
+        respect to the classifier.
+
+        Entropy in bits for a variable with values v1, v2, ..., vk
+        H(v) = - SUM[k](P(vk) * log_2(P(vk)))
+
+        The sums of the entropies of the positive of the classifier and the negative of the classifier
+
+        :param classifier:  (Attribute)
+        :return:
+        """
+        h = 0
+        size = len(self)
+        for attr in classifier.values:
+            # for each value in the classifier
+            probability = float(len([x for x in self.all_examples if x.get_value(classifier.name) == attr]))/float(size)
+            h += probability * math.log(probability, 2)
+
+        return -1 * h
