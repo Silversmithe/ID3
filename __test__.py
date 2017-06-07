@@ -6,7 +6,6 @@ import sys
 
 import attributes
 import dataset
-from id3 import Node
 
 parser = argparse.ArgumentParser(
            description='Train (and optionally test) a decision tree')
@@ -47,6 +46,8 @@ if args.dtree_module.endswith('.py') and len(args.dtree_module) > 3:
 else:
     dtree_pkg = __import__(args.dtree_module)
 
+training_data = dataset.DataSet(args.training_file, all_attributes)
+
 
 print "d-tree module: ", args.dtree_module
 print "classifier: ", args.classifier
@@ -54,35 +55,10 @@ print "attributes: ", args.attributes_file
 print "training: ", args.training_file
 
 # Train
-training_data = dataset.DataSet(args.training_file, all_attributes)
+print "\n"
 
-print training_data.entropy(classifier)
+DecisionTree = dtree_pkg.DTree(all_attributes['dangerous'], training_data, all_attributes)
 
+print "\n"
 
-# # testing the Node class
-# child1 = Node(classifier)
-# child2 = Node(classifier)
-#
-# root = Node(classifier)
-# root.add_child(child1)
-# root.add_child(child2)
-#
-# print "\nRoot\n", str(root)
-# print "\nChild1\n", str(child1)
-# print "\nChild2\n", str(child2)
-#
-# print '-'*50
-# root.del_child(child1)
-#
-# print "\nRoot\n", str(root)
-# print "\nChild1\n", str(child1)
-# print "\nChild2\n", str(child2)
-#
-# print '-'*50
-# root.del_child(child2)
-#
-# print "\nRoot\n", str(root)
-# print "\nChild1\n", str(child1)
-# print "\nChild2\n", str(child2)
-
-
+DecisionTree.dump()

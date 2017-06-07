@@ -15,7 +15,6 @@ Split according to the feature that does the best job dividing the examples by
 classification (Entropy)
 """
 
-
 import copy
 import dataset
 from node import Node
@@ -28,18 +27,18 @@ class DTree:
 
     """
     ID3 Pseudocode
-    
+
     ID3 (Exampels, Target_Attribute, Attributes)
         create a root node for the tree
-        
+
         if all examples are positive, return the single-node tree Root, with label = +
         if all examples are negative, return the single-node tree root, with label = -
-        
+
         if number of predicting attributes is empty, then return the single node tree root with,
             \ label = most common value of the target attribute in the examples
-            
+
         Otherwise Begin
-        
+
             A <- The attribute that best classifies examples
             Decision tree attribute for Root = A
             For each possible value, vi, of A,
@@ -49,7 +48,7 @@ class DTree:
                     then below this new branch add a leaf node with label = most common target value
                         \ in the examples
                 else below this new branch add the subtree ID3 (examples(vi), Target_attribute, attributes - {A})
-                
+
         End
         Return Root
     """
@@ -98,16 +97,16 @@ class DTree:
         :return:
         """
         if node.attribute.name in ['yes', 'no', '--']:
-            print ' '*indent, '<' + node.attribute.name + '>'
+            print ' ' * indent, '<' + node.attribute.name + '>'
             return
         else:
             for child in node.children:
                 print ' ' * indent, node.attribute.name, ":", child[0]
                 # print ' ' * indent, '(', len(node.data_set), ')'
-                self.pre_order(child[1], indent+1)
+                self.pre_order(child[1], indent + 1)
 
     # HELPER FUNCTIONS
-    def id3(self, root,  target_attr, attrs, indent):
+    def id3(self, root, target_attr, attrs, indent):
         """
 
         :param root:
@@ -119,13 +118,13 @@ class DTree:
         # pass in root
         # check if all examples are positive, then return a ('yes')
         if root.data_set.is_all_positive(classifier=target_attr):
-            print ' '*indent, 'assigned yes'
+            print ' ' * indent, 'assigned yes'
             root.attribute = Attribute('yes', 'end')
             return
 
         # check if all examples are negative, then return a ('no')
         if root.data_set.is_all_negative(classifier=target_attr):
-            print ' '*indent, 'assigned no'
+            print ' ' * indent, 'assigned no'
             root.attribute = Attribute('no', 'end')
             return
 
@@ -164,18 +163,18 @@ class DTree:
             # create the attribute for this node
             root.attribute = best_attributes[0][0]
 
-            print ' '*indent, "best attribute: ", root.attribute.name
+            print ' ' * indent, "best attribute: ", root.attribute.name
 
             root.attribute.values.sort()
 
             # END: BEST ATTRIBUTES
-            print ' '*indent, root.attribute.name.upper()
-            print ' '*indent, 'number positive examples: ', root.data_set.total_positive(target_attr)
-            print ' '*indent, 'total examples: ', len(root.data_set)
+            print ' ' * indent, root.attribute.name.upper()
+            print ' ' * indent, 'number positive examples: ', root.data_set.total_positive(target_attr)
+            print ' ' * indent, 'total examples: ', len(root.data_set)
             # ADD CHILDREN
 
             for value in root.attribute.values:
-                print '\n', '  '*indent, root.attribute.name.upper(), ": ", value.upper()
+                print '\n', '  ' * indent, root.attribute.name.upper(), ": ", value.upper()
 
                 example_set = [x for x in root.data_set.all_examples if x.get_value(root.attribute) == value]
 
@@ -187,28 +186,28 @@ class DTree:
                 attributes.remove(root.attribute)
 
                 if len(example_set) == 0:
-                    print ' '*indent, "warning: no examples"
+                    print ' ' * indent, "warning: no examples"
                     # choose the most prevalent example from the population that falls into the parent's domain
                     parent = root
                     while parent is not None:
 
                         positive_population = float(parent.data_set.total_positive(target_attr))
-                        half_size = float(float(len(parent.data_set))/2.0)
-                        print ' '*indent, parent.attribute
+                        half_size = float(float(len(parent.data_set)) / 2.0)
+                        print ' ' * indent, parent.attribute
                         for ex in parent.data_set.all_examples:
                             print ex.values
 
-                        print '-'*50, '\n(', positive_population, ", ", half_size, ")\n", '-'*50
+                        print '-' * 50, '\n(', positive_population, ", ", half_size, ")\n", '-' * 50
                         print
 
                         if positive_population > half_size:
                             # choose the positive examples
-                            print ' '*(indent+1), "warning: assign positive"
+                            print ' ' * (indent + 1), "warning: assign positive"
                             next_node.attribute = Attribute('yes', 'end')
                             break
                         elif positive_population < half_size:
                             # choose the negative examples
-                            print ' '*(indent+1), "warning: assign negative"
+                            print ' ' * (indent + 1), "warning: assign negative"
                             next_node.attribute = Attribute('no', 'end')
                             break
                         else:
@@ -228,7 +227,7 @@ class DTree:
                 next_node.data_set.all_examples = example_set
 
                 # update the children of the node by recursing through
-                self.id3(root=next_node, target_attr=target_attr, attrs=attributes, indent=indent+1)
+                self.id3(root=next_node, target_attr=target_attr, attrs=attributes, indent=indent + 1)
 
                 root.children.append((value, next_node))
 
@@ -238,10 +237,10 @@ class DTree:
             num_pos = root.data_set.total_positive(target_attr)
             num_neg = len(root.data_set) - num_pos
             tie = num_pos == num_neg
-            print ' '*indent, "warning: out of attributes"
+            print ' ' * indent, "warning: out of attributes"
 
             if tie:
-                print ' '*indent, "tie"
+                print ' ' * indent, "tie"
                 # this is what we do in the event of a tie:
                 current_parent = root.parent
 
@@ -252,7 +251,7 @@ class DTree:
 
                     if not tie:
                         root.attribute = Attribute('yes', 'end') if num_pos > num_neg else Attribute('no', 'end')
-                        print ' '*indent, "\twarning: assigned ", root.attribute.name
+                        print ' ' * indent, "\twarning: assigned ", root.attribute.name
                         break
                     else:
                         current_parent = current_parent.parent
@@ -264,7 +263,7 @@ class DTree:
                     # choose earliest value
                     root.attribute = Attribute(target_attr.values.sort()[0], 'end')
             else:
-                print ' '*indent, "not tie"
+                print ' ' * indent, "not tie"
                 # in the event of NOT a tie
                 root.attribute = Attribute('yes', 'end') if num_pos > num_neg else Attribute('no', 'end')
-                print ' '*indent, "\twarning: assigned ", root.attribute.name
+                print ' ' * indent, "\twarning: assigned ", root.attribute.name

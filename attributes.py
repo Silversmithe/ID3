@@ -11,7 +11,7 @@ import re
 import sys
 
 
-class Attribute(object):
+class Attribute:
     'A single attribute description: name + permissible values'
 
     def __init__(self, name, values):
@@ -22,7 +22,7 @@ class Attribute(object):
         return self.name + ' --> ' + str(self.values)
 
 
-class Attributes(object):
+class Attributes:
     """An ordered collection of attributes and values"""
 
     # Create a new instance of an attribute collection. If a file is
