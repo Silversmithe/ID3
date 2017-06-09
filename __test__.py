@@ -47,7 +47,8 @@ else:
     dtree_pkg = __import__(args.dtree_module)
 
 training_data = dataset.DataSet(args.training_file, all_attributes)
-
+starting_attrs = copy.copy(all_attributes)
+starting_attrs.remove(classifier)
 
 print "d-tree module: ", args.dtree_module
 print "classifier: ", args.classifier
@@ -57,8 +58,14 @@ print "training: ", args.training_file
 # Train
 print "\n"
 
-DecisionTree = dtree_pkg.DTree(all_attributes['dangerous'], training_data, all_attributes)
+dtree = dtree_pkg.DTree(classifier, training_data, starting_attrs)
 
 print "\n"
 
-DecisionTree.dump()
+print dtree.dump()
+
+print "\n"
+
+if args.testing_file:
+    testing_data = dataset.DataSet(args.testing_file, all_attributes)
+    dtree.test(classifier, testing_data)

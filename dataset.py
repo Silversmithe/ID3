@@ -5,10 +5,9 @@ Specifies an interface for storing individual datapoints (class Example), and co
 of datapoints (class DataSet). A DataSet can be initialized from a data file in the format
 described in section 1.
 """
-import math
 import re
 import sys
-import math
+from math import log
 import attributes
 
 
@@ -69,6 +68,8 @@ class DataSet:
 
     def entropy(self, classifier):
         """
+        SHANNON'S ENTROPY
+
         1: completely random
         0: no randomness
         Attribute (overall)
@@ -91,22 +92,55 @@ class DataSet:
         The sums of the entropys of the positive of the classifier and the negative of the classifier
 
         :param classifier:  (Attribute)
-        :return:
+        :return: (entropy, dominant_value)
+
+        entropy:
+        dominant_value:
+            None: if there are no examples
         """
-        h = 0
+        h = 0.0
+        # dominant_value = (value, size)
+        dominant_value = None
 
-        if len(self) == 0:
-            return 0
+        if len(self.all_examples) == 0.0:
+            # if there are no examples then all the examples are the same
+            # there is order of nothingness
+            # print 'no examples'
+            return 0.0, None
 
-        size = len(self)
-        for attr in classifier.values:
-            # for each value in the classifier
-            probability = float(len([x for x in self.all_examples if x.get_value(classifier.name) == attr]))/float(size)
-            res = 0 if probability <= 0 else probability
-            # print attr, ": ", probability
-            h += probability * res
+        population_size = float(len(self.all_examples))
 
-        return -1 * h
+        # otherwise calculate entropy
+        for value in classifier.values:
+            # go through each value in the classifier
+            # calculate the parts associated with that value
+            # add it to the entropy sum
+            partial_population = [x for x in self.all_examples if x.get_value(classifier.name) == value]
+
+            if len(partial_population) == 0.0:
+                # if this is zero, we just classify it as zero and move on
+                # if there are examples and none of them are in this value, there is no way this value
+                #       can be the most dominant
+                h += 0.0
+                continue
+            else:
+                # calculation of the partial probability
+                partial_probability = float(float(len(partial_population))/population_size)
+                partial_entropy = partial_probability * log(partial_probability, 2)
+                h += partial_entropy
+
+            # update the dominant value
+            if dominant_value is None:
+                # if the dominant value has not been initialized yet
+                # collect the first value and add it to the dominant value
+                dominant_value = value, len(partial_population)
+            else:
+                # if there is a new value with a partial population larger than the current dominant value
+                # make this new value the dominant value
+                if len(partial_population) > dominant_value[1]:
+                    dominant_value = value, len(partial_population)
+
+        return -1 * h, dominant_value[0]
 
     def remainder(self, target_attr, attr):
         """
@@ -121,15 +155,15 @@ class DataSet:
             temp = DataSet()
             temp.all_examples = [x for x in self.all_examples if x.get_value(attr) == value]
             # WEIGHT
-            num_pos = temp.total_positive(target_attr)
+            num_pos = temp.partial_count(target_attr)
             val = num_pos + (len(temp)-num_pos)
-            actual = self.total_positive(target_attr) + (self.__len__()-self.total_positive(target_attr))
+            actual = self.partial_count(target_attr) + (self.__len__() - self.partial_count(target_attr))
 
-            total += (float(val)/float(actual)) * temp.entropy(target_attr)
+            total += (float(val)/float(actual)) * temp.entropy(target_attr)[0]
 
         return total
 
-    def gain(self, target_attr, attr):
+    def gain(self, target_attr, attr, debug=False):
         """
         Information gain is the expected reduction in entropy
 
@@ -141,34 +175,22 @@ class DataSet:
 
         :return:
         """
-        current_entropy = self.entropy(target_attr)
+        current_entropy = self.entropy(target_attr)[0]
         # print
         # print attr
 
         gain = current_entropy - self.remainder(target_attr=target_attr, attr=attr)
-        # print gain
+        if debug is True:
+            print attr, ": ", gain
         return gain
 
-    def total_positive(self, classifier):
+    def partial_count(self, classifier):
         """
 
         :param classifier:
         :return:
         """
-        return len([x for x in self.all_examples if x.get_value(classifier) == 'yes'])
-
-    def is_all_positive(self, classifier):
-        """
-
-        :param classifier:
-        :return:
-        """
-        return self.total_positive(classifier) == len(self)
-
-    def is_all_negative(self, classifier):
-        """
-
-        :param classifier:
-        :return:
-        """
-        return (len(self) - self.total_positive(classifier)) == len(self)
+        classifier.values.sort()
+        value = classifier.values[0]
+        partial_set = [x for x in self.all_examples if x.get_value(classifier) == value]
+        return float(len(partial_set))

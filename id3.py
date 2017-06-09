@@ -15,44 +15,14 @@ Split according to the feature that does the best job dividing the examples by
 classification (Entropy)
 """
 
-
 import copy
 import dataset
 from node import Node
 from attributes import Attribute
-import math
 
 
 class DTree:
     """Represents a decision tree created with the ID3 algorithm"""
-
-    """
-    ID3 Pseudocode
-    
-    ID3 (Exampels, Target_Attribute, Attributes)
-        create a root node for the tree
-        
-        if all examples are positive, return the single-node tree Root, with label = +
-        if all examples are negative, return the single-node tree root, with label = -
-        
-        if number of predicting attributes is empty, then return the single node tree root with,
-            \ label = most common value of the target attribute in the examples
-            
-        Otherwise Begin
-        
-            A <- The attribute that best classifies examples
-            Decision tree attribute for Root = A
-            For each possible value, vi, of A,
-                Add a new tree branch below Root, corresponding to the test A = vi
-                let examples(vi) be the subset of examples that have the value vi for A
-                if examples(vi) is empty)
-                    then below this new branch add a leaf node with label = most common target value
-                        \ in the examples
-                else below this new branch add the subtree ID3 (examples(vi), Target_attribute, attributes - {A})
-                
-        End
-        Return Root
-    """
 
     def __init__(self, classifier, training_data, attributes):
         """
@@ -65,13 +35,11 @@ class DTree:
         self.classifier = classifier
         self.training_data = training_data
         self.attributes = attributes
-        self.attributes.remove(self.classifier)  # remove the classifier because we do not need to split on it
 
         # initialize the beginning of the tree
         root = Node(data=self.training_data, parent=None, children=list(), attribute=None)
-        self.id3(root=root, target_attr=self.classifier, attrs=self.attributes, indent=0)
+        self.id3(root=root, target_attribute=self.classifier, attrs=self.attributes, debug=False)
         self.decision_tree = root
-        # self.checksum(self.decision_tree)
 
     def test(self, classifier, testing_data):
         """
@@ -81,52 +49,110 @@ class DTree:
         :param testing_data: (DataSet) Set of testing data
         :return: (int) Number of test examples that were correctly classified by the decision tree
         """
-        return 0
+        count = 0
+
+        def warning(test1, test2):
+            if test1 == test2:
+                return ":)", 1
+            else:
+                return "!!!", 0
+
+        for example in testing_data.all_examples:
+            val1, val2 = self.test_case(instance=example, node=self.decision_tree), example.get_value(classifier)
+            sign, add = warning(val1, val2)
+            count += add
+            print 'test: {}, actual: {}  -- {}'.format(val1, val2, sign)
+
+        return count
 
     def dump(self):
         """
         Prints out a visual representation of the decision tree
         """
-        self.pre_order(self.decision_tree, 0)
+        return self.pre_order(classifier=self.classifier, node=self.decision_tree, indent=0)
 
-        return ""
-
-    def pre_order(self, node, indent):
+    def pre_order(self, classifier, node, indent):
         """
 
+        :param classifier:
         :param node:
+        :param indent:
         :return:
         """
-        if node.attribute.name in ['yes', 'no', '--']:
-            print ' '*indent, '<' + node.attribute.name + '>'
-            return
+        text = ''
+        if node.attribute.name in self.classifier.values:
+            text += "{}<{}>\n".format(str(' '*indent), node.attribute.name)
+            return text
         else:
             for child in node.children:
-                print ' ' * indent, node.attribute.name, ":", child[0]
-                # print ' ' * indent, '(', len(node.data_set), ')'
-                self.pre_order(child[1], indent+1)
+                part = ''
+                part += "{}{}:{}\n".format(str(' ' * indent), node.attribute.name, child[0])
+                text += "{}{}".format(part, self.pre_order(classifier=classifier, node=child[1], indent=indent+1))
+        return text
 
     # HELPER FUNCTIONS
-    def id3(self, root,  target_attr, attrs, indent):
+    def test_case(self, instance, node):
+        """
+
+        :param instance: (Example) the information to classify
+        :param node: (Node) current node
+        :return:
+        """
+        if 'end' in node.attribute.values:
+            return node.attribute.name
+        else:
+            example_value = instance.get_value(node.attribute)
+
+            for child in node.children:
+                if example_value == child[0]:
+                    return self.test_case(instance=instance, node=child[1])
+        return 'unknown'
+
+    # HELPER FUNCTIONS
+    def like_parent_like_child(self, classifier, node):
+        """
+
+        :param classifier:
+        :param node:
+        :return:
+
+        Attribute: return the attribute that this child should model based on their parent
+        """
+        while node is not None:
+
+            parent_entropy = node.data_set.entropy(classifier=classifier)
+            if parent_entropy[0] != 1:
+                # there is an unequal amount of positive and negative value
+                # choose the most dominant value for the attribute
+                return Attribute(parent_entropy[1], 'end')
+            else:
+                # the data set is completely random
+                # meaning that there are equal amounts of positive classifications and negative
+                # classifications
+                # move to the next parent
+                return self.like_parent_like_child(classifier=classifier, node=node.parent)
+
+        else:
+            # finishes the loop correctly
+            # at the parent node
+            # SUSPICIOUS
+            print 'error: finished the loop and there is no parent with a dominant value'
+            return Attribute(classifier.values.sort()[0], 'end')
+
+    def id3(self, root, target_attribute, attrs, debug=False):
         """
 
         :param root:
-        :param target_attr:
+        :param target_attribute:
         :param attrs:
         :param indent:
         :return:
         """
         # pass in root
-        # check if all examples are positive, then return a ('yes')
-        if root.data_set.is_all_positive(classifier=target_attr):
-            print ' '*indent, 'assigned yes'
-            root.attribute = Attribute('yes', 'end')
-            return
-
-        # check if all examples are negative, then return a ('no')
-        if root.data_set.is_all_negative(classifier=target_attr):
-            print ' '*indent, 'assigned no'
-            root.attribute = Attribute('no', 'end')
+        # do a general check based on entropy
+        if root.data_set.entropy(classifier=target_attribute)[0] == 0:
+            value = root.data_set.all_examples[0].get_value(target_attribute)
+            root.attribute = Attribute(value, 'end')
             return
 
         # there are attributes to split upon
@@ -134,49 +160,49 @@ class DTree:
 
         if len(attrs) > 0:
             # START: BEST ATTRIBUTE
-            best_attributes = []
-            top_attr = None
+            best_attributes = list()
 
             # find the best attribute
             for attr in attrs:
                 # iterate through each value in the attribute
-                gain = root.data_set.gain(target_attr, attr)
+                gain = root.data_set.gain(target_attribute, attr, debug)
 
-                if top_attr is None:
-                    top_attr = (attr, gain)
-                elif top_attr[1] == gain:
+                if len(best_attributes) == 0:
                     best_attributes.append((attr, gain))
-                elif top_attr[1] < gain:
-                    top_attr = (attr, gain)
-
-            best_attributes.append(top_attr)
+                elif best_attributes[0][1] == gain:
+                    best_attributes.append((attr, gain))
+                elif best_attributes[0][1] < gain:
+                    best_attributes = [(attr, gain)]
 
             # organize alphabetically
-            # "Also, if there is a tie in entropy reduction between multiple attributes, you should choose the attribute
-            # whose name is earlies in the alphabet (using Python's native string comparison)
+            # "Also, if there is a tie in entropy reduction between multiple attributes, you should choose the
+            # attribute
+            # whose name is earlier in the alphabet (using Python's native string comparison)
             def name(elem):
                 return elem[0].name
 
             # sort based on name
             best_attributes.sort(key=name)
+            if debug is True:
+                print
+                print 'best attributes: '
+                for attr in best_attributes:
+                    print attr[0].name, " ",
+                print
 
             # BUILD CHILDREN
             # create the attribute for this node
             root.attribute = best_attributes[0][0]
 
-            print ' '*indent, "best attribute: ", root.attribute.name
-
             root.attribute.values.sort()
 
             # END: BEST ATTRIBUTES
-            print ' '*indent, root.attribute.name.upper()
-            print ' '*indent, 'number positive examples: ', root.data_set.total_positive(target_attr)
-            print ' '*indent, 'total examples: ', len(root.data_set)
+            if debug is True:
+                print "best attribute: ", root.attribute.name
+                raw_input('...')
             # ADD CHILDREN
 
             for value in root.attribute.values:
-                print '\n', '  '*indent, root.attribute.name.upper(), ": ", value.upper()
-
                 example_set = [x for x in root.data_set.all_examples if x.get_value(root.attribute) == value]
 
                 # examples to work with
@@ -186,41 +212,15 @@ class DTree:
                 attributes = copy.copy(attrs)
                 attributes.remove(root.attribute)
 
+                # CASE: RUN OUT OF EXAMPLES
                 if len(example_set) == 0:
-                    print ' '*indent, "warning: no examples"
+                    if debug is True:
+                        print 'warning: out of examples'
                     # choose the most prevalent example from the population that falls into the parent's domain
                     parent = root
-                    while parent is not None:
-
-                        positive_population = float(parent.data_set.total_positive(target_attr))
-                        half_size = float(float(len(parent.data_set))/2.0)
-                        print ' '*indent, parent.attribute
-                        for ex in parent.data_set.all_examples:
-                            print ex.values
-
-                        print '-'*50, '\n(', positive_population, ", ", half_size, ")\n", '-'*50
-                        print
-
-                        if positive_population > half_size:
-                            # choose the positive examples
-                            print ' '*(indent+1), "warning: assign positive"
-                            next_node.attribute = Attribute('yes', 'end')
-                            break
-                        elif positive_population < half_size:
-                            # choose the negative examples
-                            print ' '*(indent+1), "warning: assign negative"
-                            next_node.attribute = Attribute('no', 'end')
-                            break
-                        else:
-                            parent = parent.parent
-                    else:
-                        # finishes the loop correctly
-                        # at the parent node
-                        # SUSPICIOUS
-                        root.attribute = Attribute(target_attr.values.sort()[0], 'end')
+                    next_node.attribute = self.like_parent_like_child(classifier=target_attribute, node=parent)
 
                     # no need to delve any more into next node
-
                     root.children.append((value, next_node))
                     continue
 
@@ -228,43 +228,25 @@ class DTree:
                 next_node.data_set.all_examples = example_set
 
                 # update the children of the node by recursing through
-                self.id3(root=next_node, target_attr=target_attr, attrs=attributes, indent=indent+1)
+                self.id3(root=next_node, target_attribute=target_attribute, attrs=attributes, debug=debug)
 
                 root.children.append((value, next_node))
 
         else:
             # RUN OUT OF FEATURES
             # no attributes
-            num_pos = root.data_set.total_positive(target_attr)
+            if debug is True:
+                print 'warning: out of features'
+
+            num_pos = root.data_set.partial_count(target_attribute)
             num_neg = len(root.data_set) - num_pos
             tie = num_pos == num_neg
-            print ' '*indent, "warning: out of attributes"
 
             if tie:
-                print ' '*indent, "tie"
                 # this is what we do in the event of a tie:
-                current_parent = root.parent
-
-                while current_parent.parent is not None:
-                    num_pos = current_parent.data_set.total_positive(target_attr)
-                    num_neg = len(current_parent.data_set) - num_pos
-                    tie = num_pos == num_neg
-
-                    if not tie:
-                        root.attribute = Attribute('yes', 'end') if num_pos > num_neg else Attribute('no', 'end')
-                        print ' '*indent, "\twarning: assigned ", root.attribute.name
-                        break
-                    else:
-                        current_parent = current_parent.parent
-
-                else:
-                    # gets to the actual root node
-                    # finishes the loop correctly
-                    # at the parent node
-                    # choose earliest value
-                    root.attribute = Attribute(target_attr.values.sort()[0], 'end')
+                parent = root
+                root.attribute = self.like_parent_like_child(classifier=target_attribute, node=parent)
             else:
-                print ' '*indent, "not tie"
                 # in the event of NOT a tie
-                root.attribute = Attribute('yes', 'end') if num_pos > num_neg else Attribute('no', 'end')
-                print ' '*indent, "\twarning: assigned ", root.attribute.name
+                dominant_value = root.data_set.entropy(classifier=target_attribute)[1]
+                root.attribute = Attribute(dominant_value, 'end')
