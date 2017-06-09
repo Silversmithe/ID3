@@ -1,0 +1,61 @@
+size:large
+ sharp teeth:no
+  domesticated:no
+   <no>
+  domesticated:yes
+   feet:no
+    <no>
+   feet:yes
+    habitat:land
+     <no>
+    habitat:water
+     <no>
+ sharp teeth:yes
+  <yes>
+size:medium
+ domesticated:no
+  sharp teeth:no
+   feet:no
+    <yes>
+   feet:yes
+    habitat:land
+     <yes>
+    habitat:water
+     <yes>
+  sharp teeth:yes
+   feet:no
+    habitat:land
+     <no>
+    habitat:water
+     <no>
+   feet:yes
+    habitat:land
+     <yes>
+    habitat:water
+     <yes>
+ domesticated:yes
+  sharp teeth:no
+   <no>
+  sharp teeth:yes
+   feet:no
+    <no>
+   feet:yes
+    habitat:land
+     <no>
+    habitat:water
+     <no>
+size:small
+ domesticated:no
+  feet:no
+   sharp teeth:no
+    <no>
+   sharp teeth:yes
+    <yes>
+  feet:yes
+   sharp teeth:no
+    <yes>
+   sharp teeth:yes
+    <no>
+ domesticated:yes
+  <no>
+

@@ -1,0 +1,6 @@
+size:small,medium,large
+sharp teeth:yes,no
+feet:yes,no
+habitat:land,water
+domesticated:yes,no
+dangerous:yes,no
