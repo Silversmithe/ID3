@@ -68,4 +68,6 @@ print "\n"
 
 if args.testing_file:
     testing_data = dataset.DataSet(args.testing_file, all_attributes)
-    dtree.test(classifier, testing_data)
+    size = float(len(testing_data.all_examples))
+    result = float(dtree.test(classifier, testing_data, True))
+    print "{} of {} ({}%) of testing examples correctly identified".format(result, size, float(result/size)*100)

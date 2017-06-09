@@ -41,7 +41,7 @@ class DTree:
         self.id3(root=root, target_attribute=self.classifier, attrs=self.attributes, debug=False)
         self.decision_tree = root
 
-    def test(self, classifier, testing_data):
+    def test(self, classifier, testing_data, debug=False):
         """
         Uses a decision tree to classify test examples
 
@@ -60,8 +60,9 @@ class DTree:
         for example in testing_data.all_examples:
             val1, val2 = self.test_case(instance=example, node=self.decision_tree), example.get_value(classifier)
             sign, add = warning(val1, val2)
+            if debug is True:
+                print 'test: {}\tactual: {}\t{}'.format(val1, val2, sign)
             count += add
-            print 'test: {}, actual: {}  -- {}'.format(val1, val2, sign)
 
         return count
 
