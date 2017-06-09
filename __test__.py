@@ -56,18 +56,12 @@ print "attributes: ", args.attributes_file
 print "training: ", args.training_file
 
 # Train
-print "\n"
-
 dtree = dtree_pkg.DTree(classifier, training_data, starting_attrs)
-
-print "\n"
-
 print dtree.dump()
-
-print "\n"
 
 if args.testing_file:
     testing_data = dataset.DataSet(args.testing_file, all_attributes)
     size = float(len(testing_data.all_examples))
-    result = float(dtree.test(classifier, testing_data, True))
+    result = float(dtree.test(classifier, testing_data))
     print "{} of {} ({}%) of testing examples correctly identified".format(result, size, float(result/size)*100)
+print
