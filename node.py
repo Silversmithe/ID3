@@ -12,9 +12,6 @@ In order to maintain the SIMPLICITY of this class, I will assume that the progra
 class will responsibly have the information available when necessary and remove it when necessary. Only if I must I
 will create a more friendly interface, but will
 """
-import copy
-import dataset
-from attributes import Attribute
 
 
 class Node:
@@ -50,4 +47,3 @@ class Node:
         self.data_set = data
         self.parent = parent
         self.children = children
-

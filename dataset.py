@@ -8,7 +8,6 @@ described in section 1.
 import re
 import sys
 from math import log
-import attributes
 
 
 class Example:
@@ -144,10 +143,12 @@ class DataSet:
 
     def remainder(self, target_attr, attr):
         """
+        Calculated the remainder the data set given a certain attribute
 
-        :param target_attr:
-        :param attr:
+        :param target_attr: (Attribute) The attribute to classify the nodes on
+        :param attr: (Attribute) The specific attribute
         :return:
+        (int) the remainder based on the attribute
         """
         total = 0
         for value in attr.values:
@@ -173,7 +174,11 @@ class DataSet:
         B * (p/p+n)
         is the entropy of a given set of examples with p positives and n negatives
 
+        :param target_attr: (Attribute) attribute to classify based on
+        :param attr: (Attribute)
+        :param debug: (Boolean) Enable or disable debug messages
         :return:
+        (int) the gain
         """
         current_entropy = self.entropy(target_attr)[0]
         # print
@@ -187,8 +192,9 @@ class DataSet:
     def partial_count(self, classifier):
         """
 
-        :param classifier:
+        :param classifier: (Attribute): The attribute to classify the examples
         :return:
+        (float): number of times that one of the classifier's arbitrary values appears in the dataset
         """
         classifier.values.sort()
         value = classifier.values[0]

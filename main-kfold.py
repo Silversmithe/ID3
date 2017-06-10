@@ -2,6 +2,8 @@
 """
 File:           main-kfold.py
 
+Author:         Alexander S. Adranly
+
 Provides a command-line interface to the decision tree. It takes a positional
 parameter for the decision tree algorithm module name, and for the name of the classification
 attribute. Invoke with --help to see the complete list of options.
@@ -71,34 +73,6 @@ def _generate_example(example_data):
     for example in example_data:
         yield example
 
-
-def _target_manager_sequence(self, dir_list):
-    """
-    :param dir_list:
-    :return:
-
-     description: A method that finds all the target GCF files
-    """
-
-    # TargetManager Routine
-
-    dir_gen = self._generate_target(dir_list)  # generator for managers
-
-    try:
-        while True:
-            for manager in self._manager_list:
-                manager.directory_list.append(next(dir_gen))
-
-    except StopIteration:
-        print "\n***Target Distribution Complete***\n"
-
-# check values
-print "d-tree module: ", args.dtree_module
-print "classifier: ", args.classifier
-print "attributes: ", args.attributes_file
-print "data: ", args.data_file
-print "k-value: ", args.k_value
-
 # Train
 data = dataset.DataSet(args.data_file, all_attributes)
 starting_attrs = copy.copy(all_attributes)
@@ -124,40 +98,25 @@ except StopIteration:
     # example distribution is complete
     pass
 
-# TEST FOR CODE
-print
-print "total examples: {}".format(len(data.all_examples))
-for partition in data_partition:
-    print len(partition)
-print
-
 # K-FOLD PARTITIONING
 k_fold_forest = []  # a forest of d trees
 test_accuracy_sum = 0  # variable to hold the sum of each training and testing
 for testing_partition in data_partition:
     # use the selected partition for the training set
     # group all the other partitions into a testing set
-    training_datasets = [x for x in data_partition if x != testing_partition]
+    training_dataset = [x for x in data_partition if x != testing_partition]
     train_set = dataset.DataSet()
 
-    for dset in training_datasets:
+    for dset in training_dataset:
         train_set.all_examples.extend(dset.all_examples)
 
-    temp_attributes = copy.copy(starting_attrs)
     # train the tree and gather the results
-    k_fold_forest.append(dtree_pkg.DTree(classifier, train_set, temp_attributes))
+    k_fold_forest.append(dtree_pkg.DTree(classifier, train_set, copy.copy(starting_attrs)))
 
     # test the tree
     correct_results = k_fold_forest[-1].test(classifier, testing_partition)
     accuracy = (float(correct_results)*100.0)/float(len(testing_partition))
-    # print "{}% accurate".format(accuracy)
     test_accuracy_sum += accuracy
 
-# DUMP TREES
-print 'dumping trees...'
-for tree in k_fold_forest:
-    print tree.dump()
-    print
-
 # DISPLAY AVERAGE
-print "average: {}%".format(float(test_accuracy_sum/float(k_value)))
+print "On average: {}% of the testing examples were correctly identified".format(float(test_accuracy_sum/float(k_value)))
