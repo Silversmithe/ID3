@@ -1,13 +1,7 @@
-# Homework \#3 - Machine Learning
-
-COEN 266 - Artificial Intelligence
-
-Spring 2017
-
 ### Overview
 For this homework assignment, you will be implementing a decision tree that uses the ID3 algorithm.
 
-## Part 1: Data Cleaning (20 points)
+## Part 1: Data Cleaning
 For this portion, you will need to develop a dataset comprised of at least 100 examples. If you would like, you can use one
 of the data sets that are publicly available at: https://archive.ics.uci.edu/ml/.
 
@@ -76,7 +70,7 @@ _lug_boot:_ small, med, big.
 _safety:_ low, med, high. 
 
 
-## Part 2: ID3 Decision Tree Creation and Testing (70 points)
+## Part 2: ID3 Decision Tree Creation and Testing
 Implement an ID3-based decision tree creator and tester. It will accept a set of data in the format described in part 1,
 and from that data produce a decision tree. It will also allow testing the accuracy of the decision  tree by running test
 cases against the tree and comparing the decision tree's performance against the known classifications.
@@ -208,34 +202,3 @@ run\_test.py will run the decision tree algorithm with the training data, and pr
 is also present in the test directory, the script will also run those examples against the decision tree and report the 
 accuracy of the tree in predicting a classification for them. Finally, all output will be compared against the known good 
 results in the testname.out file.
-
-## Note
-__*All code must run on the Engineering Design Center Linux machines( linux.dc.engr.ecu.edu ) without additional packages
-installed. Note that machines are running fairly ancient (2.6.6.) version of Python, so if you do any development outside
-of the DC computers, make sure to test early and test often!*__
-
-## Grading
-You will be graded on correctness and coding style. The assignment will be graded out of 100 points, so anything above that 
-is equivalent to extra credit.
-
-## Additional Credit
-For additional credit, implement no more than __one__ of the following:
-
-* (15 points) Implement k-fold validation by running k iterations, each time using a different partition of the data for
-training and testing. Note that this will require changes to the main.py interface, so please create a seperate main-kfold.py.
-
-* (20 points) Implement a decision tree using random forests. It should have the same interface as the existing decision tree,
-but the tree dump should dump all of the generated trees in the forest. If you choose to implement this, create a
-id3-random-forests.py file for it.
-
-* (30 points) Implement support for handling real-valued attributes, automatically partitioning at points where entropy is 
-greatly reduced. If you choose to implement this, create an id3-real.py file for it. Also, submit two data sets, one for 
-the standard id3 algorithm consisting only of categorical data, and one with real-valued attributes for use with the extra 
-credit assignment.
-
-As always, the first person to identify each significant shortcomming in the assignment itself (this document) will receive
-a 5 point bonus
-
-## Sumbission 
-The assignment is due Wednesday, June 7th at 8am. No assignment will be accepted after 8am on Monday, June 12th. All submissions
-should be made on Camino.
